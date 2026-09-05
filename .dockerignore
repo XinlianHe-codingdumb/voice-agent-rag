@@ -1,0 +1,12 @@
+**
+!Dockerfile
+!pyproject.toml
+!README.md
+!src/
+!src/treasury_rag/
+!src/treasury_rag/*.py
+!web/
+!web/*.js
+!web/*.css
+!web/*.html
+!HM_Treasury_ARA_25-26.pdf

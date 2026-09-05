@@ -34,7 +34,37 @@ Typed / push-to-talk / Live Call
 
 FastAPI runs locally and stores conversations in SQLite. `OPENAI_API_KEY` stays in the Python backend; it is never exposed to browser JavaScript. Live Call receives a backend-created WebRTC Realtime session.
 
-## Quick start
+## Quick start — Docker (Windows / macOS / Linux)
+
+Install and start [Docker Desktop](https://docs.docker.com/get-started/get-docker/) (Linux can use Docker Engine with Compose). **No local Python or OCR installation is required.**
+
+1. Download this repository using **Code → Download ZIP**, and extract it.
+2. Duplicate `.env.example`, name the copy `.env`, and fill in `OPENAI_API_KEY`. Leave other defaults unchanged.
+3. Open a terminal in the extracted folder and run:
+
+```sh
+docker compose up -d --build
+```
+
+Open **http://localhost:8000**, or click port **8000** for the running service in Docker Desktop. The first build downloads dependencies and may take several minutes; later starts reuse the image.
+
+Start with **Documents → Upload PDF**. Use the included Treasury PDF or your own PDF. A fresh installation starts with an empty library and builds indexes on upload; no numbered Python scripts are required.
+
+To copy the template from a terminal: `Copy-Item .env.example .env` in PowerShell, or `cp .env.example .env` on macOS/Linux. Only copy it on first setup, to avoid overwriting an existing key.
+
+```sh
+docker compose logs --tail=100 voice-agent  # Inspect startup errors
+docker compose down                       # Stop; preserve saved data
+docker compose up -d                       # Start again
+```
+
+Documents, chats, memories and indexes persist in Docker named volumes across container replacement. `docker compose down -v` erases those volumes; do not use it to stop the app normally. After changing `.env`, run `docker compose up -d --force-recreate`. If port 8000 is occupied, stop the existing Python server or change the host mapping in `compose.yaml` to `127.0.0.1:8001:8000` and open localhost:8001.
+
+The microphone runs in your browser; no audio device passthrough into Docker is needed. Select it in **Settings**, allow browser permission, then use **Mic** or **Talk live**. Your key must have access to the configured models and sufficient API credit. Docker provides a local server, not a public multi-user deployment.
+
+Container build, startup, OCR initialization and persistence checks run in GitHub Actions. Linux amd64 is the automated test platform; other platforms are not claimed as tested until verified.
+
+## Development setup — Python (optional)
 
 ### Requirements
 

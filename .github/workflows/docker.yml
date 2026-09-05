@@ -1,0 +1,27 @@
+name: Docker startup
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start without paid API calls
+        run: |
+          cp .env.example .env
+          docker compose config --quiet
+          docker compose up -d --build --wait --wait-timeout 180
+      - name: Verify empty installation, OCR and persistence
+        run: |
+          curl --fail http://localhost:8000/ >/dev/null
+          curl --fail http://localhost:8000/api/health
+          docker compose exec -T voice-agent python -c "from rapidocr_onnxruntime import RapidOCR; RapidOCR(); print('OCR initialized')"
+          curl --fail -X POST http://localhost:8000/api/conversations -H 'Content-Type: application/json' -d '{"title":"Docker persistence check"}'
+          docker compose down
+          docker compose up -d --wait --wait-timeout 120
+          curl --fail http://localhost:8000/api/conversations | python3 -c "import json,sys; assert any(c['title']=='Docker persistence check' for c in json.load(sys.stdin)['conversations'])"
+      - name: Diagnostics
+        if: always()
+        run: docker compose logs --no-color --tail=100

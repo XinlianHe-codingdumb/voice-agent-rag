@@ -162,7 +162,9 @@ class BackendState:
             CONVERSATION_DB, max_sessions=100, max_messages=12
         )
         self.documents: dict[str, DocumentRecord] = {}
-        self._register_existing(settings.pdf_path, settings.artifact_dir, settings.pdf_path.name)
+        # Fresh installations start empty; uploads build indexes automatically.
+        if settings.pdf_path.is_file() and (settings.artifact_dir / "vectors.npy").is_file() and (settings.artifact_dir / "chunks.jsonl").is_file():
+            self._register_existing(settings.pdf_path, settings.artifact_dir, settings.pdf_path.name)
         self._load_saved_documents()
         if self.memory.first_initialization() and self.memory.ensure("default", "Imported documents"):
             for document_id in self.documents:
