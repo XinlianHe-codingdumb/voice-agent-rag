@@ -1,0 +1,16 @@
+﻿run_id,pipeline,split,cases,top_k,hit_rate_at_k,mean_recall_at_k,mrr,run_dir
+20260902T051706Z_baseline-bm25_dev,baseline_bm25,dev,7,5,1.000000,0.928571,0.857143,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T051706Z_baseline-bm25_dev
+20260902T051900Z_baseline-bm25_dev,baseline_bm25,dev,17,5,0.882353,0.852941,0.823529,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T051900Z_baseline-bm25_dev
+20260902T052142Z_cleaned-bm25_dev,cleaned_bm25,dev,17,5,0.882353,0.852941,0.823529,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T052142Z_cleaned-bm25_dev
+20260902T052248Z_bm25-w120-o20_dev,bm25_w120_o20,dev,17,5,0.882353,0.882353,0.794118,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T052248Z_bm25-w120-o20_dev
+20260902T052249Z_bm25-w160-o30_dev,bm25_w160_o30,dev,17,5,0.882353,0.882353,0.764706,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T052249Z_bm25-w160-o30_dev
+20260902T052249Z_bm25-w220-o40_dev,bm25_w220_o40,dev,17,5,0.882353,0.852941,0.823529,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T052249Z_bm25-w220-o40_dev
+20260902T052249Z_bm25-w300-o50_dev,bm25_w300_o50,dev,17,5,0.882353,0.852941,0.784314,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T052249Z_bm25-w300-o50_dev
+20260902T063432Z_baseline-dense_dev,baseline_dense,dev,17,5,0.941176,0.941176,0.776471,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T063432Z_baseline-dense_dev
+20260902T144322Z_hybrid-rrf_dev,hybrid_rrf,dev,17,5,1.000000,1.000000,0.828431,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T144322Z_hybrid-rrf_dev
+20260902T144927Z_hybrid-rrf-llm-reranker_dev,hybrid_rrf_llm_reranker,dev,17,5,1.000000,1.000000,0.970588,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T144927Z_hybrid-rrf-llm-reranker_dev
+20260902T145152Z_hybrid-rrf-llm-reranker_dev,hybrid_rrf_llm_reranker,dev,17,5,1.000000,1.000000,0.931373,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T145152Z_hybrid-rrf-llm-reranker_dev
+20260902T145350Z_hybrid-rrf-llm-reranker_test,hybrid_rrf_llm_reranker,test,7,5,0.857143,0.785714,0.671429,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T145350Z_hybrid-rrf-llm-reranker_test
+20260902T150113Z_multi-query-rrf-llm-reranker_dev,multi-query-rrf-llm-reranker,dev,19,5,1.000000,1.000000,0.903509,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T150113Z_multi-query-rrf-llm-reranker_dev
+20260902T150314Z_multi-query-rrf-llm-reranker_dev,multi-query-rrf-llm-reranker,dev,19,5,1.000000,1.000000,0.912281,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T150314Z_multi-query-rrf-llm-reranker_dev
+20260902T151028Z_multi-query-rrf-llm-reranker_test,multi-query-rrf-llm-reranker,test,7,5,1.000000,0.857143,0.833333,D:\Personal Document\JOB\Wiz AI\reports\runs\20260902T151028Z_multi-query-rrf-llm-reranker_test

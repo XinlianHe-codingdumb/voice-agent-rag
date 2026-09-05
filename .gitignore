@@ -1,0 +1,13 @@
+.env
+.env.txt
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+artifacts/baseline/
+artifacts/pdf_inspection.json
+reports/latest/
+tmp/
+runtime/

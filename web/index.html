@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#175c48"><title>Wiz AI — Document workspace</title>
+  <link rel="stylesheet" href="/static/styles.css?v=20260905.3">
+</head>
+<body>
+  <main class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#conversations" aria-label="Voice Agent conversations"><svg class="brand-mark" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="4" fill="currentColor"/><path d="m4 6 22 18M4 12l18 14M10 4l16 13M4 20l7 6" stroke="#fff" stroke-width="1.3" fill="none"/></svg><strong>Voice Agent</strong><span class="brand-caption">WORKSPACE</span></a>
+      <nav class="primary-nav" aria-label="Workspace">
+        <button class="nav-item active" data-view="conversations"><span data-icon="chat"></span>Conversations</button>
+        <button class="nav-item" data-view="documents"><span data-icon="file"></span>Documents</button>
+        <button class="nav-item" data-view="memory"><span data-icon="memory"></span>Memory</button>
+        <button class="nav-item" data-view="settings"><span data-icon="settings"></span>Settings</button>
+      </nav>
+      <section class="recent-section"><div class="side-heading"><span>Recent conversations</span><button id="new-conversation" class="icon-button" aria-label="New conversation" title="New conversation"><span data-icon="plus"></span></button></div><nav id="conversation-list" class="conversation-list" aria-label="Recent conversations"></nav></section>
+      <div class="sidebar-foot"><span class="connection-dot"></span><span id="health">Connecting…</span></div>
+    </aside>
+    <section class="main-stage">
+      <header class="topbar"><div class="topbar-title"><button id="sidebar-toggle" class="icon-button" aria-label="Toggle navigation"><span data-icon="menu"></span></button><span data-icon="chat" class="topbar-icon"></span><strong id="current-title">New conversation</strong><span id="session-badge" hidden>Live</span></div><div class="top-actions"><button id="documents-toggle"><span data-icon="layers"></span><span id="document-count">0 selected</span></button><button id="evidence-toggle" aria-expanded="false"><span data-icon="panel"></span>Evidence</button></div></header>
+      <div class="content-grid" id="conversation-page">
+        <section class="conversation-stage">
+          <div class="selected-bar"><div class="context-caption"><span data-icon="file"></span><span id="selection-caption">Conversation documents</span></div><div class="context-row"><div id="selected-documents" class="selected-documents"></div><button id="add-documents" class="text-button"><span data-icon="plus"></span>Add documents</button></div></div>
+          <section id="live-hero" class="live-hero" hidden><div id="voice-wave" class="voice-wave" aria-hidden="true"></div><h1 id="live-state-label">Connecting</h1><div id="call-timer">00:00</div><p id="live-hint">Getting your session ready</p></section>
+          <div id="messages" class="messages" aria-live="polite"></div>
+          <form id="ask-form" class="composer">
+            <div class="normal-composer"><div class="input-shell"><textarea id="question" rows="1" placeholder="Ask about your documents…" aria-label="Your question" required></textarea><button id="record-button" class="record icon-button" type="button" aria-label="Record a question" title="Speak once, then review"><span data-icon="mic"></span></button><button id="ask-button" class="primary-button" type="submit">Send <span data-icon="arrow-up"></span></button></div><button id="live-call-button" class="live-call" type="button"><span data-icon="wave"></span>Talk live</button></div>
+            <div id="recorder-state" class="recorder-state" hidden><span class="record-dot"></span><strong id="recorder-label">Listening…</strong><time id="recorder-timer">00:00</time><div class="record-meter"><span id="record-meter-level"></span></div><button id="cancel-recording" type="button" class="text-button">Cancel</button><button id="done-recording" type="button" class="primary-button">Done <span data-icon="check"></span></button></div>
+            <div class="live-dock"><button id="mute-call" type="button" aria-pressed="false"><span data-icon="mic"></span><span>Mute</span></button><button id="pause-call" type="button" aria-pressed="false"><span data-icon="pause"></span><span>Pause</span></button><button id="end-live-dock" type="button" class="danger-button"><span data-icon="phone"></span>End live</button><div class="followup-shell"><input id="live-followup" type="text" placeholder="Type a follow-up…" aria-label="Live call follow-up"><button id="send-followup" type="button" aria-label="Send follow-up"><span data-icon="arrow-up"></span></button></div></div>
+            <p id="live-call-status" role="status">Type or use the mic to draft a question. Talk live for a continuous conversation.</p>
+          </form>
+        </section>
+        <aside class="evidence-panel" id="evidence-panel"><div class="evidence-heading"><div><h2>Evidence</h2><p id="evidence-caption">For the selected answer</p></div><button id="evidence-close" class="icon-button" aria-label="Close evidence"><span data-icon="close"></span></button></div><div id="evidence-list" class="evidence-list"></div><div class="evidence-foot"><span data-icon="shield"></span>Trace answers back to the source</div></aside>
+      </div>
+      <section id="documents-page" class="workspace-page" hidden><div class="page-heading"><div><p class="page-kicker">YOUR KNOWLEDGE LIBRARY</p><h1>Documents</h1><p>Choose the sources for your current conversation.</p></div><button id="upload-open" class="primary-button"><span data-icon="upload"></span>Upload PDF</button></div><div class="library-header"><span>DOCUMENT</span><span>STATUS & ACTIONS</span></div><div id="document-meta" class="document-library">Loading documents…</div></section>
+      <section id="memory-page" class="workspace-page" hidden><div class="page-heading"><div><p class="page-kicker">CONVERSATION CONTINUITY</p><h1>Chat summaries</h1><p>After 10 user turns, each conversation is saved here as one concise long-term summary.</p></div><button id="clear-memories" class="outline-button" hidden>Clear all</button></div><div id="memory-list" class="memory-list">Loading summaries…</div></section>
+      <section id="settings-page" class="workspace-page" hidden><div class="page-heading"><div><p class="page-kicker">MAKE IT YOUR WORKSPACE</p><h1>Settings</h1><p>Audio preferences for questions and live conversations.</p></div></div><div class="settings-section"><div><h2>Voice input</h2><p>Select the microphone you speak into.</p></div><div><label for="microphone-select">Microphone</label><select id="microphone-select"><option value="">Default microphone</option></select><label for="speech-language">Speaking language</label><select id="speech-language"><option value="en">English</option><option value="zh">中文</option><option value="auto">Auto-detect / mixed</option></select><p class="field-note">Changing language ends an active call. Reconnect to apply it.</p></div></div></section>
+    </section>
+  </main>
+  <dialog id="upload-dialog"><div class="dialog-heading"><h2>Add documents</h2><button id="upload-close" class="icon-button" aria-label="Close upload"><span data-icon="close"></span></button></div><p>Text and scanned PDFs. Files are selected for this conversation once ready.</p><label id="pdf-dropzone" class="drop-zone" for="pdf-input"><span data-icon="upload"></span><strong>Drop your PDFs here</strong><span>or choose files</span><small>No application file-size limit</small></label><input id="pdf-input" type="file" accept="application/pdf,.pdf" multiple hidden><div id="upload-progress" class="upload-progress" hidden><div class="progress-ring" role="progressbar" aria-label="Upload progress"><span id="upload-percent">0%</span></div><span id="upload-status">Uploading</span></div><div id="upload-jobs" aria-live="polite"></div></dialog>
+  <dialog id="memory-dialog"><form id="memory-edit-form"><div class="dialog-heading"><h2>Edit memory</h2><button id="memory-close" type="button" class="icon-button" aria-label="Close edit"><span data-icon="close"></span></button></div><textarea id="memory-edit-text" rows="5" maxlength="2000" required aria-label="Memory text"></textarea><p id="memory-edit-status" role="status"></p><button class="primary-button" type="submit">Save changes</button></form></dialog>
+  <script src="/static/realtime_turns.js?v=20260905.3" defer></script><script src="/static/workspace.js?v=20260905.3" defer></script><script src="/static/app.js?v=20260905.3" defer></script>
+</body></html>
