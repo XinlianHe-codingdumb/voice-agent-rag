@@ -11,3 +11,8 @@ artifacts/pdf_inspection.json
 reports/latest/
 tmp/
 runtime/
+artifacts/
+reports/latest_answer/
+reports/runs/
+AI Agent Book.pdf
+AI Builder Intern - Take Home Accessment.pdf
