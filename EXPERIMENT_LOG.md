@@ -436,6 +436,8 @@ This file records deliberate architecture changes and the evidence used to accep
 
 ## Change 029 - Final visual refinements (2026-09-05)
 
+Deployment follow-up: Docker Compose quick start, fresh-install startup fix and CI verification are recorded in [DOCKER_DEPLOYMENT.md](reports/DOCKER_DEPLOYMENT.md). Container build/start/OCR/persistence checks passed in GitHub Actions run 33975397345; local targeted tests: 3 passed.
+
 - Renamed the top-left product label to “Voice Agent”.
 - Increased the selected Evidence card outline from 1 px to 2 px green while preserving its size with matching padding adjustment, making a clicked citation visibly easier to locate.
 
