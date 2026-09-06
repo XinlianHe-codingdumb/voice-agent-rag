@@ -1,5 +1,12 @@
 # Experiment and change log
 
+## Submission presentation update 2026-09-06
+
+- Added the user-supplied live-call screenshot to `docs/images/voice-agent-live-call.png` and embedded it in the README introduction.
+- Created a local Word technical submission covering architecture, design decisions, AI-assisted workflow and RAG testing. The document keeps development and held-out metrics distinct.
+- Checked the README image reference and original-image checksum. Word structure was checked; visual rendering was unavailable because this Windows runtime has no Word/LibreOffice renderer.
+- Application code and behaviour are unchanged.
+
 This file records deliberate architecture changes and the evidence used to accept or reject them. Machine-generated run artifacts are stored under `reports/runs/<run_id>/`; `reports/experiment_history.csv` is the append-only metric index.
 
 ## Baseline implementation

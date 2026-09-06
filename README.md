@@ -6,6 +6,10 @@ It is deliberately inspectable: grounded answers cite PDF pages, retrieved excer
 
 ## Highlights
 
+![Voice Agent live call with conversation history and retrieved PDF evidence](docs/images/voice-agent-live-call.png)
+
+*Live voice conversation with document evidence and page references alongside the chat.*
+
 - Text PDFs and scanned PDFs: native extraction with local CPU OCR fallback.
 - Multi-document RAG: BM25 + embeddings → reciprocal-rank fusion → LLM reranking → cited answer.
 - Separate conversations, each with an independent set of selected documents.
