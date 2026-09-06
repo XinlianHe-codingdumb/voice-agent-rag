@@ -22,6 +22,7 @@
   fillIcons();
   let api = {}, activeView = 'conversations', currentId = '', currentTitle = '', memories = [], conversations = [];
   const evidenceCache = new Map();
+  let messageSequence = 0, evidenceScrollTimer = null, readingScrollTop = 0;
   let evidenceSources = [], evidenceKey = '', callStart = 0, callTick = null, live = false, paused = false, muted = false;
   let liveContext = null, frame = null;
   const time = seconds => `${Math.floor(seconds / 60).toString().padStart(2,'0')}:${Math.floor(seconds % 60).toString().padStart(2,'0')}`;
@@ -65,6 +66,10 @@
   }
   function showEvidence(sources, key, focusIndex = null) {
     evidenceSources = sources; evidenceKey = key;
+    document.querySelectorAll('.message.assistant').forEach(node => {
+      const active = node.dataset.evidenceKey === key && sources.length > 0;
+      node.classList.toggle('evidence-active', active);
+    });
     $('#evidence-caption').textContent = sources.length ? `${sources.length} retrieved excerpt${sources.length===1?'':'s'}` : 'For the selected answer';
     $('#evidence-list').innerHTML = sources.map((source, index) => `<button class="evidence-card ${focusIndex===index?'selected':''}" data-evidence-index="${index}" data-document-name="${esc(source.document_name || 'Document')}" data-pdf-page="${esc(source.pdf_page)}"><div class="source-head"><span class="pdf-icon">${icon('file')}</span><div><strong>${esc(source.document_name || 'Document')}</strong><small>[${index+1}] · PDF page ${esc(source.pdf_page)}</small></div></div><div class="source-quote">${esc(source.snippet || source.text || 'No excerpt returned.')}</div><div class="relevance"><span>Retrieved evidence</span><span>Rank ${index+1}</span></div></button>`).join('') || `<div class="evidence-empty">${icon('file')}<strong>Every answer has a starting point</strong><p>Retrieved excerpts will appear here.<br>Select “Evidence” under an answer to inspect its sources.</p></div>`;
     if (focusIndex !== null) {
@@ -74,6 +79,10 @@
   }
   function formatAnswer(text, sources, key) {
     let safe = esc(text);
+    safe = safe.replace(/\[(\d+)\]/g, (all, number) => {
+      const index = Number(number) - 1;
+      return sources[index] ? `<button class="citation" data-citation="${index}" data-answer-key="${esc(key)}" title="View evidence">${all}</button>` : all;
+    });
     safe = safe.replace(/\[Document ([\s\S]*?), PDF page (\d+)\]/g, (all,name,page)=> {
       const index = sources.findIndex(s=>esc(s.document_name)===name && String(s.pdf_page)===page);
       return index < 0 ? all : `<button class="citation" data-citation="${index}" data-answer-key="${esc(key)}" title="View evidence">[${index+1}]</button>`;
@@ -87,26 +96,59 @@
     }
     return html+(list?'</ul>':'');
   }
-  function addMessage(role,text,sources=[],latency=null) {
+  function addMessage(role,text,sources=[],latency=null,messageId=null) {
     $('.welcome')?.remove();
-    const key = `${currentId}:${text}`;
-    if(sources.length) evidenceCache.set(key,sources);
-    const cached = evidenceCache.get(key) || sources;
+    const key = `${currentId}:${messageId == null ? 'new-'+(++messageSequence) : 'saved-'+messageId}`;
+    const cached = sources;
+    evidenceCache.set(key,cached);
     const article = document.createElement('article'); article.className=`message ${role}`;
-    article.innerHTML=`<div class="message-avatar">${icon(role==='user'?'user':'spark')}</div><div class="message-content">${role==='user'?'':'<div class="role">WIZ AI</div>'}<div class="answer-body">${role==='user'?`<p>${esc(text).replace(/\n/g,'<br>')}</p>`:formatAnswer(text,cached,key)}</div>${role==='user'?'':`<div class="message-actions"><button data-copy-answer title="Copy answer">${icon('copy')}Copy</button>${cached.length?`<button data-show-evidence data-answer-key="${esc(key)}">${icon('file')}Evidence · ${cached.length}</button>`:''}${latency?`<span class="timing">${(Number(latency)/1000).toFixed(1)}s</span>`:''}</div>`}</div>`;
+    article.innerHTML=`<div class="message-avatar">${icon(role==='user'?'user':'spark')}</div><div class="message-content">${role==='user'?'':'<div class="role">Voice Agent</div>'}<div class="answer-body">${role==='user'?`<p>${esc(text).replace(/\n/g,'<br>')}</p>`:formatAnswer(text,cached,key)}</div>${role==='user'?'':`<div class="message-actions"><button data-copy-answer title="Copy answer">${icon('copy')}Copy</button>${cached.length?`<button data-show-evidence data-answer-key="${esc(key)}">${icon('file')}Evidence · ${cached.length}</button>`:''}${latency?`<span class="timing">${(Number(latency)/1000).toFixed(1)}s</span>`:''}</div>`}</div>`;
     article.dataset.copyText=text;
-    if(role!=='user' && cached.length && !article.querySelector('.citation')) {
+    if(role!=='user') article.dataset.evidenceKey=key;
+    if(role!=='user' && cached.length) {
       const refs=document.createElement('div'); refs.className='source-references';
       refs.innerHTML='Retrieved sources '+cached.map((source,index)=>`<button class="citation" data-citation="${index}" data-answer-key="${esc(key)}" title="${esc(source.document_name)} · page ${esc(source.pdf_page)}">[${index+1}]</button>`).join(' ');
       article.querySelector('.answer-body').appendChild(refs);
     }
-    $('#messages').appendChild(article); $('#messages').scrollTop=$('#messages').scrollHeight;
-    if(role!=='user') showEvidence(cached,key);
+    const scroller = $('#messages');
+    const followBottom = scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight < 100;
+    scroller.appendChild(article);
+    if(followBottom) {
+      scroller.scrollTop=scroller.scrollHeight;
+      readingScrollTop=scroller.scrollTop;
+      if(role!=='user' && cached.length) showEvidence(cached,key);
+    }
+    return key;
   }
   function resetMessages(items=[]) {
+    clearTimeout(evidenceScrollTimer);
+    evidenceCache.clear();
     $('#messages').innerHTML=''; showEvidence([],'');
     if(!items.length) $('#messages').innerHTML=`<div class="welcome"><div class="welcome-mark">${icon('layers')}</div><h1>A clearer view of<br>your documents.</h1><p>Ask a question, connect the details, and explore the evidence behind every answer.</p><div class="welcome-rule"></div><small>Select your sources above, then start a conversation.</small></div>`;
-    items.forEach(item=>addMessage(item.role,item.content));
+    let latest = null;
+    items.forEach(item=>{
+      const key=addMessage(item.role,item.content,item.sources || [],null,item.message_id);
+      if(item.role==='assistant' && item.sources?.length) latest={key,sources:item.sources};
+    });
+    $('#messages').scrollTop=$('#messages').scrollHeight;
+    readingScrollTop=$('#messages').scrollTop;
+    if(latest) showEvidence(latest.sources, latest.key);
+  }
+  function followReadingEvidence() {
+    if(activeView!=='conversations') return;
+    const bounds=$('#messages').getBoundingClientRect();
+    const center=(bounds.top+bounds.bottom)/2;
+    let selected=null, distance=Infinity;
+    document.querySelectorAll('#messages .message.assistant').forEach(node=>{
+      const rect=node.getBoundingClientRect();
+      if(rect.bottom<=bounds.top || rect.top>=bounds.bottom) return;
+      // Prefer the answer containing the reading center; otherwise its nearest edge.
+      const gap=Math.max(rect.top-center,center-rect.bottom,0);
+      if(gap<distance){selected=node;distance=gap;}
+    });
+    if(!selected) return;
+    const key=selected.dataset.evidenceKey;
+    if(key!==evidenceKey) showEvidence(evidenceCache.get(key)||[],key);
   }
   function renderLiveStatus() {
     if(!live)return;
@@ -163,9 +205,16 @@
   $('#memory-close').addEventListener('click',()=>$('#memory-dialog').close());
   $('#selected-documents').addEventListener('click',async event=>{const target=event.target.closest('[data-detach]');if(target){target.disabled=true;try{await api.detach(target.dataset.detach);}catch(error){addMessage('assistant',error.message);}}});
   $('#messages').addEventListener('click',async event=>{
+    clearTimeout(evidenceScrollTimer);
     const target=event.target.closest('[data-answer-key]');if(target){const key=target.dataset.answerKey;showEvidence(evidenceCache.get(key)||[],key,target.hasAttribute('data-citation')?Number(target.dataset.citation):0);}
     const copy=event.target.closest('[data-copy-answer]');if(copy){try{await navigator.clipboard.writeText(copy.closest('.message').dataset.copyText);copy.innerHTML=icon('check')+'Copied';}catch{copy.textContent='Copy unavailable';}}
   });
+  $('#messages').addEventListener('scroll',()=>{
+    if($('#messages').scrollTop===readingScrollTop) return;
+    readingScrollTop=$('#messages').scrollTop;
+    clearTimeout(evidenceScrollTimer);
+    evidenceScrollTimer=setTimeout(followReadingEvidence,120);
+  },{passive:true});
   $('#evidence-list').addEventListener('click',event=>{const card=event.target.closest('[data-evidence-index]');if(!card)return;showEvidence(evidenceSources,evidenceKey,Number(card.dataset.evidenceIndex));document.dispatchEvent(new CustomEvent('evidence:navigate',{detail:{documentName:card.dataset.documentName,pdfPage:Number(card.dataset.pdfPage)}}));});
   $('#memory-list').addEventListener('click',event=>{
     const target=event.target.closest('[data-edit-memory]');if(target){const memory=memories.find(m=>String(m.memory_id)===target.dataset.editMemory);$('#memory-edit-text').value=memory.content;$('#memory-edit-form').dataset.memoryId=memory.memory_id;$('#memory-edit-status').textContent='';$('#memory-dialog').showModal();}

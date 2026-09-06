@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+import json
 import threading
 import uuid
 from datetime import datetime, timezone
@@ -82,6 +83,10 @@ class ConversationStore:
                 CREATE TABLE IF NOT EXISTS app_flags (name TEXT PRIMARY KEY);
                 """
             )
+
+            columns = {row["name"] for row in self._connection.execute("PRAGMA table_info(messages)")}
+            if "sources_json" not in columns:
+                self._connection.execute("ALTER TABLE messages ADD COLUMN sources_json TEXT NOT NULL DEFAULT '[]'")
 
     def hidden_documents(self):
         with self._lock:
@@ -180,9 +185,19 @@ class ConversationStore:
         if row is None:
             raise KeyError(f"Unknown conversation: {conversation_id}")
         result = dict(row)
-        result["messages"] = self.get(conversation_id)
+        result["messages"] = self.history(conversation_id)
         result["document_ids"] = self.document_ids(conversation_id)
         return result
+
+    def history(self, conversation_id: str) -> list[dict]:
+        """Full display history; model context remains bounded via get()."""
+        with self._lock:
+            rows = self._connection.execute(
+                "SELECT message_id, role, content, sources_json FROM messages WHERE conversation_id = ? ORDER BY message_id",
+                (conversation_id,),
+            ).fetchall()
+        return [dict(message_id=row["message_id"], role=row["role"],
+                     content=row["content"], sources=json.loads(row["sources_json"])) for row in rows]
 
     def get(self, conversation_id: str) -> list[dict[str, str]]:
         with self._lock:
@@ -225,18 +240,22 @@ class ConversationStore:
             ).fetchone()
         return int(row["total"] if row else 0)
 
-    def append_turn(self, conversation_id: str, user: str, assistant: str) -> None:
+    def append_turn(self, conversation_id: str, user: str, assistant: str,
+                    sources=None, assistant_messages=None) -> None:
         self.ensure(conversation_id)
         now = _now()
         with self._lock, self._connection:
             self._connection.executemany(
                 """
-                INSERT INTO messages(conversation_id, role, content, created_at)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO messages(conversation_id, role, content, created_at, sources_json)
+                VALUES (?, ?, ?, ?, ?)
                 """,
                 [
-                    (conversation_id, "user", user, now),
-                    (conversation_id, "assistant", assistant, now),
+                    (conversation_id, "user", user, now, "[]"),
+                ] + [
+                    (conversation_id, "assistant", item["content"], now,
+                     json.dumps(item.get("sources", []), ensure_ascii=False))
+                    for item in (assistant_messages or [{"content": assistant, "sources": sources or []}])
                 ],
             )
             row = self._connection.execute(

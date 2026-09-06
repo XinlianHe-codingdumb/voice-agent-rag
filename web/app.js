@@ -51,6 +51,7 @@ let realtimeStream = null;
 let realtimeAudio = null;
 let realtimeUserTranscript = "";
 let realtimeAssistantSegments = [];
+let realtimeSavedSegments = [];
 let realtimeSources = [];
 let realtimeToolPending = false;
 let realtimeSaveTimer = null;
@@ -304,12 +305,14 @@ async function saveRealtimeTurn() {
   if (!realtimeUserTranscript || !realtimeAssistantSegments.length || realtimeToolPending) return;
   const user = realtimeUserTranscript;
   const assistant = realtimeAssistantSegments.join(" ").trim();
+  const assistant_messages = realtimeSavedSegments;
+  realtimeSavedSegments = [];
   realtimeUserTranscript = "";
   realtimeAssistantSegments = [];
   await fetch("/api/realtime/turn", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({conversation_id: conversationId, user, assistant}),
+    body: JSON.stringify({conversation_id: conversationId, user, assistant, assistant_messages}),
   });
   await Promise.all([loadConversations(), loadMemories()]);
 }
@@ -417,6 +420,7 @@ async function handleCompletedUserTranscript(transcript) {
   realtimeAssistantSegments = [];
   realtimeSources = [];
   addMessage("user", transcript);
+  realtimeSavedSegments = [];
 
   if (spokeDuringResponse) {
     if (realtimeResponseActive) sendRealtimeEvent({type: "response.cancel"});
@@ -478,6 +482,7 @@ function handleRealtimeEvent(event) {
     const transcript = (event.transcript || "").trim();
     if (transcript) {
       realtimeAssistantSegments.push(transcript);
+      realtimeSavedSegments.push({content: transcript, sources: [...realtimeSources]});
       addMessage("assistant", transcript, realtimeSources);
       realtimeSources = [];
       scheduleRealtimeSave();

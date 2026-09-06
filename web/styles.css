@@ -1,4 +1,5 @@
 :root { --ink:#17201b; --muted:#737a75; --green:#175c48; --mint:#e8eee8; --sidebar:#f0f1ed; --line:#e3e6e1; --red:#c63e32; --surface:#fff; }
+.message.evidence-active .message-avatar { outline:2px solid #91b3a3; outline-offset:3px; }
 * { box-sizing:border-box; scrollbar-width:thin; scrollbar-color:#c8cfc1 transparent; } [hidden] { display:none!important; }
 .source-references { margin-top:12px; color:var(--muted); font-size:10px; }
 body { margin:0; color:var(--ink); background:#f7f7f4; font:14px/1.5 Inter,"Segoe UI",system-ui,sans-serif; }

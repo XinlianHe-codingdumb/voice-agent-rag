@@ -76,10 +76,16 @@ class IntentRequest(BaseModel):
     conversation_id: str | None = None
 
 
+class AssistantSegment(BaseModel):
+    content: str = Field(min_length=1, max_length=10000)
+    sources: list[dict] = Field(default_factory=list, max_length=100)
+
+
 class RealtimeTurnRequest(BaseModel):
     conversation_id: str = Field(min_length=1, max_length=128)
     user: str = Field(min_length=1, max_length=5_000)
     assistant: str = Field(min_length=1, max_length=10_000)
+    assistant_messages: list[AssistantSegment] = Field(default_factory=list, max_length=50)
 
 
 @dataclass
@@ -520,7 +526,8 @@ class BackendState:
                 ]
                 answer = provider.answer(question, contexts, history, memories)
 
-        self.memory.append_turn(conversation_id, original_question, answer)
+        self.memory.append_turn(conversation_id, original_question, answer,
+                                sources=[self._source(item) for item in results])
         summary = self._capture_conversation_summary(conversation_id)
         return {
             "answer": answer,
@@ -933,7 +940,8 @@ def create_app() -> FastAPI:
             request.user, request.conversation_id
         )
         state.memory.append_turn(
-            request.conversation_id, request.user, request.assistant
+            request.conversation_id, request.user, request.assistant,
+            assistant_messages=[item.model_dump() for item in request.assistant_messages],
         )
         summary = state._capture_conversation_summary(request.conversation_id)
         return {
